@@ -143,6 +143,19 @@ def test_avance_ya_realizado_se_descuenta_del_total():
     assert centro.fin == HOY  # quedan 12 placas, un solo día a 12/día
 
 
+def test_carga_diaria_refleja_capacidad_usada():
+    puestos = [_puesto_capacidad("Centro", [], capacidad_diaria=12)]
+    trabajo = Trabajo(nv="1", cantidades={"placas": 12})
+
+    _, carga_diaria = calcular_programa(
+        puestos, [trabajo], Calendario(), HOY, devolver_carga_diaria=True
+    )
+
+    carga_hoy = next(c for c in carga_diaria if c.puesto == "Centro" and c.fecha == HOY)
+    assert carga_hoy.capacidad_total == 12
+    assert carga_hoy.capacidad_usada == 12
+
+
 def test_semaforo_contra_ftf():
     puestos = [_puesto_capacidad("Centro", [], capacidad_diaria=12)]
     trabajo_a_tiempo = Trabajo(nv="1", cantidades={"placas": 12}, ftf=HOY + timedelta(days=5))

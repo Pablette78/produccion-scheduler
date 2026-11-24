@@ -4,8 +4,8 @@ App para programar la producción de una fábrica de placares/muebles a medida.
 
 Se construye en etapas:
 
-1. **Motor de cálculo** (`engine/`) — código puro, con tests. Es lo que hay hasta ahora.
-2. **API** (`api/`) — todavía no construida.
+1. **Motor de cálculo** (`engine/`) — código puro, con tests. Listo.
+2. **API** (`api/`) — FastAPI + SQLite, envuelve el motor con persistencia. Lista.
 3. **Interfaz web** (`web/`) — todavía no construida.
 
 ## Motor de cálculo
@@ -50,3 +50,40 @@ defecto, pero son editables)
 - Capacidad diaria de LED (metros/día) y de DTC1 (trabajos/día).
 - Tamaño del lote de traspaso de cada puesto.
 - Umbral del semáforo amarillo (días de desvío).
+
+## API
+
+Envuelve el motor con persistencia en SQLite (`data/produccion.sqlite3`,
+se crea sola al arrancar) y siembra la tabla de puestos por defecto la
+primera vez.
+
+### Correr la API
+
+```powershell
+pip install -r api/requirements.txt
+uvicorn api.main:app --reload
+```
+
+Documentación interactiva en `http://127.0.0.1:8000/docs`.
+
+### Endpoints principales
+
+- `GET/POST/PUT/DELETE /puestos` — tabla de puestos (sección 2).
+- `GET/POST/PUT/DELETE /trabajos` y `POST /trabajos/reordenar` — cola de
+  trabajos y su prioridad (drag & drop en la futura UI).
+- `GET/POST/DELETE /calendario/feriados` y `/calendario/excepciones` —
+  calendario laboral (sección 5).
+- `GET/PUT /parametros` — umbral del semáforo amarillo.
+- `GET /programa` — corre el motor y devuelve el cronograma completo:
+  fechas por puesto y por trabajo, semáforo contra FTF, y carga diaria por
+  puesto contra su capacidad (para el Gantt y el gráfico de cuellos de
+  botella, sección 8).
+
+### Tests
+
+```powershell
+pip install -r api/requirements.txt
+pytest
+```
+
+(El mismo comando de arriba corre los tests del motor y de la API juntos.)

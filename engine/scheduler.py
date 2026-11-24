@@ -64,6 +64,14 @@ class ResultadoTrabajo:
     semaforo: Optional[str]  # "verde" | "amarillo" | "rojo" | None
 
 
+@dataclass
+class CargaDia:
+    puesto: str
+    fecha: date
+    capacidad_total: float  # ya ajustada por calendario (0 en feriado, etc.)
+    capacidad_usada: float
+
+
 def _orden_topologico(puestos: list[Puesto]) -> list[Puesto]:
     por_nombre = {p.nombre: p for p in puestos}
     for p in puestos:
@@ -98,11 +106,14 @@ def _orden_topologico(puestos: list[Puesto]) -> list[Puesto]:
 def _aplica_a_trabajo(puesto: Puesto, trabajo: Trabajo) -> bool:
     if puesto.es_laqueado:
         return sum(trabajo.cantidad_a_laquear.values()) > 0
-    if puesto.condicion_de_uso == "siempre":
-        return True
-    # "solo_si_el_trabajo_lo_lleva"
-    if puesto.componente is not None:
-        return trabajo.cantidades.get(puesto.componente, 0) > 0
+    # Si el puesto tiene una cantidad propia (placas, puertas, ...) y el
+    # trabajo no lleva nada de eso, el puesto no es parte de su ruta —
+    # independientemente de `condicion_de_uso` (que distingue puestos
+    # siempre necesarios, como Centro, de puestos verdaderamente opcionales
+    # como LED). Sin esto, un total en cero queda "sin fecha" en vez de
+    # simplemente no aplicar, y bloquea el fin del trabajo.
+    if puesto.componente is not None and trabajo.cantidades.get(puesto.componente, 0) <= 0:
+        return False
     return True
 
 
@@ -249,10 +260,17 @@ def calcular_programa(
     calendario: Calendario,
     hoy: date,
     umbral_amarillo_dias: int = 0,
-) -> list[ResultadoTrabajo]:
+    devolver_carga_diaria: bool = False,
+):
     """Calcula el cronograma completo. `trabajos_en_orden` debe venir en
     orden de prioridad (el primero es el de mayor prioridad y consume
-    capacidad primero). El cronograma siempre arranca desde `hoy`."""
+    capacidad primero). El cronograma siempre arranca desde `hoy`.
+
+    Devuelve la lista de `ResultadoTrabajo`. Si `devolver_carga_diaria` es
+    True, devuelve en cambio una tupla `(resultados, carga_diaria)`, donde
+    `carga_diaria` es una lista de `CargaDia` (capacidad usada vs. total por
+    puesto y día, sección 8.2 — "carga diaria por puesto contra su
+    capacidad")."""
 
     orden_puestos = _orden_topologico(puestos)
     es_laqueado = {p.nombre: p.es_laqueado for p in puestos}
@@ -363,4 +381,33 @@ def calcular_programa(
             )
         )
 
-    return resultados
+    if not devolver_carga_diaria:
+        return resultados
+
+    # La simulación solo consulta `capacidad_restante` en los días donde
+    # algún trabajo tenía algo disponible para procesar. Para que la
+    # carga diaria muestre el calendario completo (incluidos los días
+    # ociosos, para ver dónde hay margen), se completa explícitamente
+    # cada puesto desde hoy hasta el fin más lejano de todos los trabajos.
+    fines_de_trabajos = [r.fin_trabajo for r in resultados if r.fin_trabajo is not None]
+    fecha_hasta = max(fines_de_trabajos) if fines_de_trabajos else hoy
+    for puesto in puestos:
+        dia = hoy
+        while dia <= fecha_hasta:
+            obtener_capacidad(puesto.nombre, dia)
+            dia += timedelta(days=1)
+
+    carga_diaria = []
+    for (nombre_puesto, dia), restante in sorted(capacidad_restante.items(), key=lambda kv: kv[0]):
+        capacidad_efectiva = calendario.capacidad_del_dia(
+            nombre_puesto, dia, capacidad_diaria_por_puesto[nombre_puesto]
+        )
+        carga_diaria.append(
+            CargaDia(
+                puesto=nombre_puesto,
+                fecha=dia,
+                capacidad_total=capacidad_efectiva,
+                capacidad_usada=capacidad_efectiva - restante,
+            )
+        )
+    return resultados, carga_diaria
