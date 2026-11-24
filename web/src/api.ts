@@ -77,6 +77,8 @@ export interface ResultadoTrabajo {
   fin_trabajo: string | null;
   desvio_dias: number | null;
   semaforo: Semaforo;
+  avance_pct: number;
+  carga_pendiente_dias: number;
   por_puesto: Record<string, ResultadoPuesto>;
 }
 
@@ -91,6 +93,42 @@ export interface Programa {
   hoy: string;
   trabajos: ResultadoTrabajo[];
   carga_diaria: CargaDia[];
+}
+
+export interface VistaPreviaExcel {
+  hojas: string[];
+  hoja: string;
+  columnas: string[];
+  filas_muestra: (string | null)[][];
+  total_filas: number;
+}
+
+export interface MapeoImportacion {
+  hoja: string;
+  columna_nv: string;
+  columna_cliente?: string | null;
+  columna_categoria?: string | null;
+  columna_vendedor?: string | null;
+  columna_complejidad?: string | null;
+  columna_ftf?: string | null;
+  cantidades: Record<string, string>;
+  cantidad_a_laquear: Record<string, string>;
+  avance_por_puesto: Record<string, string>;
+}
+
+export interface ResultadoImportacion {
+  creados: number;
+  actualizados: number;
+  filas_con_error: { fila: number; motivo: string }[];
+}
+
+async function solicitarArchivo<T>(ruta: string, cuerpo: FormData): Promise<T> {
+  const respuesta = await fetch(`${BASE}${ruta}`, { method: "POST", body: cuerpo });
+  if (!respuesta.ok) {
+    const texto = await respuesta.text();
+    throw new Error(`${respuesta.status} ${respuesta.statusText}: ${texto}`);
+  }
+  return respuesta.json() as Promise<T>;
 }
 
 async function solicitar<T>(ruta: string, opciones?: RequestInit): Promise<T> {
@@ -133,6 +171,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ nv_en_orden: nvEnOrden }),
     }),
+  marcarTerminado: (nv: string, fecha: string | null) =>
+    solicitar<Trabajo>(`/trabajos/${encodeURIComponent(nv)}/terminado`, {
+      method: "PUT",
+      body: JSON.stringify({ fecha_real_terminado: fecha }),
+    }),
 
   listarFeriados: () => solicitar<Feriado[]>("/calendario/feriados"),
   agregarFeriado: (fecha: string) =>
@@ -154,4 +197,17 @@ export const api = {
 
   obtenerPrograma: (hoy?: string) =>
     solicitar<Programa>(`/programa${hoy ? `?hoy=${hoy}` : ""}`),
+
+  vistaPreviaExcel: (archivo: File, hoja?: string) => {
+    const form = new FormData();
+    form.append("archivo", archivo);
+    if (hoja) form.append("hoja", hoja);
+    return solicitarArchivo<VistaPreviaExcel>("/importar/excel/vista-previa", form);
+  },
+  aplicarImportacionExcel: (archivo: File, mapeo: MapeoImportacion) => {
+    const form = new FormData();
+    form.append("archivo", archivo);
+    form.append("mapeo", JSON.stringify(mapeo));
+    return solicitarArchivo<ResultadoImportacion>("/importar/excel/aplicar", form);
+  },
 };

@@ -74,8 +74,8 @@ def test_puertas_no_laqueadas_se_procesan_antes_que_las_laqueadas():
     laqueado = resultado.por_puesto["Laqueado"]
     puertas = resultado.por_puesto["Puertas"]
 
-    # las 4 no laqueadas arrancan apenas Centro entrega (no esperan a Laqueado)
-    assert puertas.inicio == centro.fin
+    # las 4 no laqueadas arrancan al día siguiente de Centro (no esperan a Laqueado)
+    assert puertas.inicio == centro.fin + timedelta(days=1)
     # pero el trabajo no cierra en Puertas hasta que vuelven las 2 laqueadas
     assert puertas.fin >= laqueado.fin
 
@@ -94,6 +94,31 @@ def test_todas_las_puertas_laqueadas_esperan_a_laqueado_completo():
     assert puertas.inicio == laqueado.fin
 
 
+def test_trabajo_en_laqueado_no_frena_a_los_de_abajo():
+    laqueado = Trabajo(
+        nv="laqueado", cantidades={"placas": 10, "puertas": 6}, cantidad_a_laquear={"puertas": 6}
+    )
+    abajo = Trabajo(nv="abajo", cantidades={"placas": 10, "puertas": 6})
+
+    resultados = calcular_programa(_puestos(), [laqueado, abajo], Calendario(), HOY)
+    r_abajo = next(r for r in resultados if r.trabajo.nv == "abajo")
+
+    assert r_abajo.por_puesto["Puertas"].fin == HOY + timedelta(days=1)
+
+
+def test_lote_todo_no_hace_esperar_a_laqueado_lo_que_no_se_laquea():
+    puestos = _puestos()
+    puestos[2].lote_traspaso = "todo"
+    trabajo = Trabajo(
+        nv="1", cantidades={"placas": 10, "puertas": 6}, cantidad_a_laquear={"puertas": 2}
+    )
+
+    [resultado] = calcular_programa(puestos, [trabajo], Calendario(), HOY)
+
+    assert resultado.por_puesto["Puertas"].inicio == HOY + timedelta(days=1)
+    assert resultado.por_puesto["Puertas"].fin == resultado.por_puesto["Laqueado"].fin
+
+
 def test_trabajo_sin_laqueado_no_usa_el_puesto_laqueado():
     trabajo = Trabajo(
         nv="1",
@@ -104,4 +129,4 @@ def test_trabajo_sin_laqueado_no_usa_el_puesto_laqueado():
     [resultado] = calcular_programa(_puestos(), [trabajo], Calendario(), HOY)
 
     assert "Laqueado" not in resultado.por_puesto
-    assert resultado.por_puesto["Puertas"].fin == resultado.por_puesto["Centro"].fin
+    assert resultado.por_puesto["Puertas"].fin == resultado.por_puesto["Centro"].fin + timedelta(days=1)

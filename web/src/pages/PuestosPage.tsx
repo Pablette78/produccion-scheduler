@@ -48,7 +48,8 @@ export default function PuestosPage() {
       <h2>Puestos</h2>
       <p className="nota">
         Capacidad diaria, lote de traspaso y demás parámetros editables (sección 11 del documento:
-        LED, DTC1 y los lotes todavía no tienen un valor definitivo).
+        LED y DTC1 todavía no tienen un valor definitivo). Lote «todo»: el trabajo entra al puesto
+        recién cuando el anterior lo terminó completo.
       </p>
 
       <table className="tabla">

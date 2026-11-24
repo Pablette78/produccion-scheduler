@@ -129,8 +129,16 @@ table.tabla th {
 
 .asa-arrastre {
   cursor: grab;
-  color: #999;
-  width: 20px;
+  color: #6b6375;
+  width: 32px;
+  font-size: 18px;
+  text-align: center;
+  touch-action: none;
+  user-select: none;
+}
+
+.asa-arrastre:active {
+  cursor: grabbing;
 }
 
 .acciones {
@@ -140,6 +148,112 @@ table.tabla th {
 
 .acciones a {
   color: var(--accent);
+}
+
+.acciones button:nth-of-type(1) {
+  background: var(--verde);
+}
+
+.boton-chico {
+  padding: 2px 8px;
+  font-size: 12px;
+  align-self: center;
+}
+
+.barra-orden {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.barra-orden .nota {
+  margin: 0;
+}
+
+.tabla-trabajos {
+  font-size: 13px;
+}
+
+table.tabla-trabajos th,
+table.tabla-trabajos td {
+  padding: 6px;
+}
+
+table.tabla-trabajos th {
+  font-size: 12px;
+}
+
+table.tabla-trabajos .col-puesto {
+  text-align: center;
+  padding: 6px 3px;
+}
+
+.col-nv {
+  white-space: nowrap;
+}
+
+.estado-puesto {
+  display: inline-block;
+  min-width: 26px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.estado-realizado {
+  background: #dff3e4;
+  color: #1d7338;
+  font-weight: 700;
+}
+
+.estado-parcial {
+  background: #fbf0cc;
+  color: #7a5c00;
+}
+
+.estado-pendiente {
+  background: #efedf1;
+  color: #5b5463;
+}
+
+.estado-frenado {
+  background: #f8dede;
+  color: #9c2a2a;
+}
+
+.estado-no-aplica {
+  color: #b9b4bf;
+}
+
+.avance {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.avance-barra {
+  width: 44px;
+  height: 6px;
+  border-radius: 3px;
+  background: #e6e3ea;
+  overflow: hidden;
+}
+
+.avance-barra div {
+  height: 100%;
+  background: var(--verde);
+}
+
+.seccion-terminados {
+  margin-top: 20px;
+}
+
+.seccion-terminados table {
+  margin-top: 10px;
 }
 
 .semaforo {
@@ -309,6 +423,10 @@ table.tabla th {
   background: #999;
 }
 
+.gantt-barra--faltante {
+  background: var(--amarillo);
+}
+
 .gantt-bloqueado {
   position: absolute;
   top: 1px;
@@ -319,6 +437,44 @@ table.tabla th {
   font-size: 10px;
   border-radius: 4px;
   padding: 0 6px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.gantt-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.gantt-selector button {
+  background: #e5e4e7;
+  color: var(--text);
+}
+
+.gantt-selector button.activo {
+  background: var(--accent);
+  color: #fff;
+}
+
+.gantt-fila--regla {
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+}
+
+.gantt-regla {
+  position: relative;
+  height: 18px;
+}
+
+.gantt-regla-marca {
+  position: absolute;
+  top: 0;
+  font-size: 11px;
+  color: #6b6375;
+  border-left: 1px solid var(--border);
+  padding-left: 4px;
   white-space: nowrap;
 }
 

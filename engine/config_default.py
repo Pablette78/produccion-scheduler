@@ -8,8 +8,9 @@ from .models import Puesto
 # Parámetros marcados como "a definir" en el documento (sección 11) quedan
 # con un valor por defecto razonable, editable:
 #   - capacidad_diaria de LED y de DTC1
-#   - lote_traspaso de cada puesto (default 1 placa/unidad; "todo" donde
-#     el documento lo exige)
+#   - lote_traspaso de cada puesto (default "todo": el trabajo pasa al
+#     puesto siguiente recién cuando terminó completo, y los días de cada
+#     puesto se suman)
 
 
 def puestos_predeterminados() -> list[Puesto]:
@@ -30,7 +31,7 @@ def puestos_predeterminados() -> list[Puesto]:
             tipo="capacidad",
             unidad="placas",
             capacidad_diaria=18,
-            lote_traspaso=1,
+            lote_traspaso="todo",
             condicion_de_uso="siempre",
             componente="placas",
         ),
@@ -40,7 +41,7 @@ def puestos_predeterminados() -> list[Puesto]:
             tipo="capacidad",
             unidad="placas",
             capacidad_diaria=18,
-            lote_traspaso=1,
+            lote_traspaso="todo",
             condicion_de_uso="siempre",
             componente="placas",
         ),
@@ -50,7 +51,7 @@ def puestos_predeterminados() -> list[Puesto]:
             tipo="capacidad",
             unidad="placas",
             capacidad_diaria=12,
-            lote_traspaso=1,
+            lote_traspaso="todo",
             condicion_de_uso="siempre",
             componente="placas",
         ),
@@ -72,7 +73,7 @@ def puestos_predeterminados() -> list[Puesto]:
             tipo="capacidad",
             unidad="placas",
             capacidad_diaria=20,
-            lote_traspaso=1,
+            lote_traspaso="todo",
             condicion_de_uso="siempre",
             componente="placas",
         ),
@@ -82,7 +83,7 @@ def puestos_predeterminados() -> list[Puesto]:
             tipo="capacidad",
             unidad="metros",
             capacidad_diaria=50,  # a definir (sección 11)
-            lote_traspaso=1,
+            lote_traspaso="todo",
             condicion_de_uso="solo_si_el_trabajo_lo_lleva",
             componente="led_metros",
         ),
@@ -92,7 +93,7 @@ def puestos_predeterminados() -> list[Puesto]:
             tipo="capacidad",
             unidad="puertas",
             capacidad_diaria=6,
-            lote_traspaso=1,
+            lote_traspaso="todo",
             condicion_de_uso="siempre",
             componente="puertas",
         ),
@@ -102,7 +103,7 @@ def puestos_predeterminados() -> list[Puesto]:
             tipo="capacidad",
             unidad="cajoneras",
             capacidad_diaria=5,
-            lote_traspaso=1,
+            lote_traspaso="todo",
             condicion_de_uso="siempre",
             componente="cajoneras",
         ),
@@ -112,7 +113,7 @@ def puestos_predeterminados() -> list[Puesto]:
             tipo="capacidad",
             unidad="cajones",
             capacidad_diaria=20,
-            lote_traspaso=1,
+            lote_traspaso="todo",
             condicion_de_uso="siempre",
             componente="cajones",
         ),

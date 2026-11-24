@@ -7,3 +7,7 @@ venv/
 node_modules/
 dist/
 .env
+
+# Excels reales de la fábrica (datos de clientes) — nunca al repo
+*.xlsx
+*.xls

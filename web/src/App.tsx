@@ -2,6 +2,7 @@ import { NavLink, Route, Routes } from "react-router-dom";
 import CalendarioPage from "./pages/CalendarioPage";
 import CargaDiariaPage from "./pages/CargaDiariaPage";
 import GanttPage from "./pages/GanttPage";
+import ImportarPage from "./pages/ImportarPage";
 import PuestosPage from "./pages/PuestosPage";
 import TrabajoFormPage from "./pages/TrabajoFormPage";
 import TrabajosPage from "./pages/TrabajosPage";
@@ -19,6 +20,7 @@ function App() {
           <NavLink to="/carga-diaria">Carga diaria</NavLink>
           <NavLink to="/puestos">Puestos</NavLink>
           <NavLink to="/calendario">Calendario</NavLink>
+          <NavLink to="/importar">Importar</NavLink>
         </nav>
       </header>
       <main className="contenido">
@@ -30,6 +32,7 @@ function App() {
           <Route path="/carga-diaria" element={<CargaDiariaPage />} />
           <Route path="/puestos" element={<PuestosPage />} />
           <Route path="/calendario" element={<CalendarioPage />} />
+          <Route path="/importar" element={<ImportarPage />} />
         </Routes>
       </main>
     </div>

@@ -34,6 +34,13 @@ pytest
   disponibles para procesar, redondeado hacia abajo al lote de traspaso).
   Esto evita tener que convertir unidades (placas → puertas) de forma
   explícita, pero es una aproximación — a confirmar con datos reales.
+- **Los días de cada puesto se suman:** lo que un puesto termina en un día
+  recién lo puede tomar el siguiente al día siguiente y, con lote de
+  traspaso "todo" (valor por defecto), cuando el trabajo está completo.
+- **El orden de la tabla manda:** en cada puesto un trabajo no empieza hasta
+  que termina lo pendiente de los de arriba, aunque el puesto quede ocioso.
+  No frenan a los de abajo los trabajos que esperan material faltante o la
+  vuelta de Laqueado.
 - **Laqueado:** se dispara cuando Centro terminó el 100% de las placas del
   trabajo (confirmado), dura 15 días corridos, y libera todo junto. Los
   puestos de ensamble procesan primero las unidades no laqueadas (según la
@@ -122,11 +129,15 @@ Abrir `http://localhost:5173`.
 - **Puestos** — edición de capacidad diaria, días fijos y lote de traspaso.
 - **Calendario** — feriados, excepciones por puesto y fecha, y el umbral
   del semáforo amarillo.
+- **Importar** — sube un Excel, elegís la hoja, mapeás cada columna a un
+  campo (NV, cliente, cantidades, cantidad a laquear, avance por puesto,
+  FTF) y aplica. Si el NV ya existe, solo actualiza los campos mapeados:
+  importar primero el archivo de placas y después el de puertas/cajones no
+  pisa lo que ya había.
 
 ### Pendiente de esta etapa
 
-- Importación/exportación de Excel (sección 8.7) — necesita los archivos
-  reales del usuario para definir el mapeo de columnas.
+- Exportación a Excel (la importación ya está).
 - "Pendientes de cierre" (trabajos con placas = 0) y el análisis de demoras
   por complejidad (secciones 8.5 y 8.8).
 - Alta de puestos nuevos desde la UI (hoy solo se editan los existentes).

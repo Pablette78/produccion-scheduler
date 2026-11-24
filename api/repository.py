@@ -9,6 +9,7 @@ from engine.config_default import UMBRAL_AMARILLO_DIAS_DEFAULT, puestos_predeter
 from engine.models import Faltante, Puesto, Trabajo
 
 from .db import ExcepcionCalendarioDB, FaltanteDB, FeriadoDB, ParametroDB, PuestoDB, TrabajoDB
+from .importador_excel import FilaImportada
 
 CLAVE_UMBRAL_AMARILLO = "umbral_amarillo_dias"
 
@@ -111,3 +112,68 @@ def cargar_trabajos_en_orden(session: Session) -> list[Trabajo]:
     capacidad primero)."""
     filas = session.exec(select(TrabajoDB).order_by(TrabajoDB.prioridad)).all()
     return [_trabajo_desde_db(f) for f in filas]
+
+
+def aplicar_filas_importadas(session: Session, filas: list[FilaImportada]) -> tuple[int, int]:
+    """Crea o actualiza trabajos a partir de filas importadas de Excel.
+
+    Solo toca los campos que la fila trae mapeados (el resto de un trabajo
+    existente queda como estaba) — así una planilla de puertas/cajones no
+    pisa las cantidades que ya cargó la planilla de placas. Devuelve
+    (creados, actualizados)."""
+
+    prioridad_siguiente = (
+        session.exec(select(TrabajoDB.prioridad).order_by(TrabajoDB.prioridad.desc())).first() or -1
+    ) + 1
+    creados = 0
+    actualizados = 0
+
+    for fila in filas:
+        existente = session.exec(select(TrabajoDB).where(TrabajoDB.nv == fila.nv)).first()
+
+        if existente is None:
+            session.add(
+                TrabajoDB(
+                    nv=fila.nv,
+                    cliente=fila.cliente or "",
+                    categoria=fila.categoria or "",
+                    complejidad=fila.complejidad or 1,
+                    vendedor=fila.vendedor or "",
+                    cantidades_json=json.dumps(fila.cantidades),
+                    cantidad_a_laquear_json=json.dumps(fila.cantidad_a_laquear),
+                    avance_por_puesto_json=json.dumps(fila.avance_por_puesto),
+                    ftf=fila.ftf,
+                    prioridad=prioridad_siguiente,
+                )
+            )
+            prioridad_siguiente += 1
+            creados += 1
+            continue
+
+        if fila.cliente is not None:
+            existente.cliente = fila.cliente
+        if fila.categoria is not None:
+            existente.categoria = fila.categoria
+        if fila.vendedor is not None:
+            existente.vendedor = fila.vendedor
+        if fila.complejidad is not None:
+            existente.complejidad = fila.complejidad
+        if fila.ftf is not None:
+            existente.ftf = fila.ftf
+        if fila.cantidades:
+            cantidades = json.loads(existente.cantidades_json)
+            cantidades.update(fila.cantidades)
+            existente.cantidades_json = json.dumps(cantidades)
+        if fila.cantidad_a_laquear:
+            a_laquear = json.loads(existente.cantidad_a_laquear_json)
+            a_laquear.update(fila.cantidad_a_laquear)
+            existente.cantidad_a_laquear_json = json.dumps(a_laquear)
+        if fila.avance_por_puesto:
+            avance = json.loads(existente.avance_por_puesto_json)
+            avance.update(fila.avance_por_puesto)
+            existente.avance_por_puesto_json = json.dumps(avance)
+        session.add(existente)
+        actualizados += 1
+
+    session.commit()
+    return creados, actualizados

@@ -114,3 +114,23 @@ def test_parametros_umbral_amarillo_se_puede_editar(client):
     respuesta = client.put("/parametros", json={"umbral_amarillo_dias": 3})
     assert respuesta.status_code == 200
     assert client.get("/parametros").json()["umbral_amarillo_dias"] == 3
+
+
+def test_marcar_terminado_lo_saca_del_programa_activo(client):
+    client.post("/trabajos", json={"nv": "1", "cantidades": {"placas": 12}})
+
+    respuesta = client.put("/trabajos/1/terminado", json={"fecha_real_terminado": "2026-01-01"})
+    assert respuesta.status_code == 200
+    assert respuesta.json()["fecha_real_terminado"] == "2026-01-01"
+
+    assert client.get("/trabajos").json()[0]["fecha_real_terminado"] == "2026-01-01"
+    assert client.get("/programa").json()["trabajos"] == []
+
+
+def test_desmarcar_terminado_lo_vuelve_a_mostrar(client):
+    client.post("/trabajos", json={"nv": "1", "cantidades": {"placas": 12}})
+    client.put("/trabajos/1/terminado", json={"fecha_real_terminado": "2026-01-01"})
+
+    client.put("/trabajos/1/terminado", json={"fecha_real_terminado": None})
+
+    assert [t["nv"] for t in client.get("/programa").json()["trabajos"]] == ["1"]

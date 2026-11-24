@@ -159,6 +159,16 @@ export default function TrabajoFormPage() {
               onChange={(e) => setDatos((d) => ({ ...d, ftf: e.target.value || null }))}
             />
           </label>
+          <label>
+            Fecha real de terminado (vacío = sigue activo)
+            <input
+              type="date"
+              value={datos.fecha_real_terminado ?? ""}
+              onChange={(e) =>
+                setDatos((d) => ({ ...d, fecha_real_terminado: e.target.value || null }))
+              }
+            />
+          </label>
         </fieldset>
 
         <fieldset>

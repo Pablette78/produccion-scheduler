@@ -55,6 +55,10 @@ class ReordenarTrabajosIn(BaseModel):
     nv_en_orden: list[str]
 
 
+class MarcarTerminadoIn(BaseModel):
+    fecha_real_terminado: Optional[date] = None
+
+
 class FeriadoIn(BaseModel):
     fecha: date
 
@@ -86,6 +90,8 @@ class ResultadoTrabajoOut(BaseModel):
     fin_trabajo: Optional[date]
     desvio_dias: Optional[int]
     semaforo: Optional[str]
+    avance_pct: int
+    carga_pendiente_dias: float
     por_puesto: dict[str, ResultadoPuestoOut]
 
 
@@ -100,3 +106,35 @@ class ProgramaOut(BaseModel):
     hoy: date
     trabajos: list[ResultadoTrabajoOut]
     carga_diaria: list[CargaDiaOut]
+
+
+class VistaPreviaExcelOut(BaseModel):
+    hojas: list[str]
+    hoja: str
+    columnas: list[str]
+    filas_muestra: list[list[Optional[str]]]
+    total_filas: int
+
+
+class MapeoImportacionIn(BaseModel):
+    hoja: str
+    columna_nv: str
+    columna_cliente: Optional[str] = None
+    columna_categoria: Optional[str] = None
+    columna_vendedor: Optional[str] = None
+    columna_complejidad: Optional[str] = None
+    columna_ftf: Optional[str] = None
+    cantidades: dict[str, str] = {}
+    cantidad_a_laquear: dict[str, str] = {}
+    avance_por_puesto: dict[str, str] = {}
+
+
+class ErrorFilaImportada(BaseModel):
+    fila: int
+    motivo: str
+
+
+class ResultadoImportacionOut(BaseModel):
+    creados: int
+    actualizados: int
+    filas_con_error: list[ErrorFilaImportada]

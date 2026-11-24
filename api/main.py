@@ -5,12 +5,13 @@ from contextlib import asynccontextmanager
 from datetime import date
 from typing import Optional
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
 
 from engine.scheduler import calcular_programa
 
+from . import importador_excel as excel
 from . import repository
 from .db import (
     ExcepcionCalendarioDB,
@@ -23,17 +24,22 @@ from .db import (
     crear_tablas,
 )
 from .schemas import (
+    ErrorFilaImportada,
     ExcepcionCalendarioIn,
     FeriadoIn,
+    MapeoImportacionIn,
+    MarcarTerminadoIn,
     ParametrosIn,
     ProgramaOut,
     PuestoIn,
     PuestoOut,
     ReordenarTrabajosIn,
+    ResultadoImportacionOut,
     ResultadoPuestoOut,
     ResultadoTrabajoOut,
     TrabajoIn,
     TrabajoOut,
+    VistaPreviaExcelOut,
 )
 
 _engine = crear_engine()
@@ -288,6 +294,22 @@ def reordenar_trabajos(datos: ReordenarTrabajosIn, session: Session = Depends(ge
     return [_trabajo_out(f) for f in filas_ordenadas]
 
 
+@app.put("/trabajos/{nv}/terminado", response_model=TrabajoOut)
+def marcar_terminado(nv: str, datos: MarcarTerminadoIn, session: Session = Depends(get_session)):
+    """Marca (o desmarca, si `fecha_real_terminado` es null) un trabajo
+    como terminado. Un trabajo terminado deja de consumir capacidad y de
+    aparecer en el cronograma activo (sección 7)."""
+
+    fila = session.exec(select(TrabajoDB).where(TrabajoDB.nv == nv)).first()
+    if fila is None:
+        raise HTTPException(404, f"No existe el trabajo '{nv}'")
+    fila.fecha_real_terminado = datos.fecha_real_terminado
+    session.add(fila)
+    session.commit()
+    session.refresh(fila)
+    return _trabajo_out(fila)
+
+
 # --------------------------------------------------------------------------
 # Calendario
 # --------------------------------------------------------------------------
@@ -398,6 +420,8 @@ def obtener_programa(hoy: Optional[date] = None, session: Session = Depends(get_
             fin_trabajo=r.fin_trabajo,
             desvio_dias=r.desvio_dias,
             semaforo=r.semaforo,
+            avance_pct=r.avance_pct,
+            carga_pendiente_dias=r.carga_pendiente_dias,
             por_puesto={
                 nombre: ResultadoPuestoOut(
                     puesto=rp.puesto,
@@ -426,4 +450,68 @@ def obtener_programa(hoy: Optional[date] = None, session: Session = Depends(get_
             }
             for c in carga_diaria
         ],
+    )
+
+
+# --------------------------------------------------------------------------
+# Importación de Excel
+# --------------------------------------------------------------------------
+
+
+def _celda_a_texto(valor) -> Optional[str]:
+    return None if valor is None else str(valor)
+
+
+@app.post("/importar/excel/vista-previa", response_model=VistaPreviaExcelOut)
+async def vista_previa_excel(archivo: UploadFile = File(...), hoja: Optional[str] = Form(None)):
+    contenido = await archivo.read()
+    try:
+        hojas = excel.listar_hojas(contenido)
+        hoja_usada, columnas, filas = excel.leer_hoja(contenido, hoja)
+    except excel.ExcelInvalido as e:
+        raise HTTPException(400, str(e))
+
+    return VistaPreviaExcelOut(
+        hojas=hojas,
+        hoja=hoja_usada,
+        columnas=columnas,
+        filas_muestra=[[_celda_a_texto(v) for v in fila] for fila in filas[:5]],
+        total_filas=len(filas),
+    )
+
+
+@app.post("/importar/excel/aplicar", response_model=ResultadoImportacionOut)
+async def aplicar_importacion_excel(
+    archivo: UploadFile = File(...),
+    mapeo: str = Form(...),
+    session: Session = Depends(get_session),
+):
+    try:
+        datos_mapeo = MapeoImportacionIn.model_validate_json(mapeo)
+    except Exception as e:
+        raise HTTPException(400, f"Mapeo inválido: {e}")
+
+    contenido = await archivo.read()
+    try:
+        _, columnas, filas = excel.leer_hoja(contenido, datos_mapeo.hoja)
+        mapeo_interno = excel.MapeoColumnas(
+            columna_nv=datos_mapeo.columna_nv,
+            columna_cliente=datos_mapeo.columna_cliente,
+            columna_categoria=datos_mapeo.columna_categoria,
+            columna_vendedor=datos_mapeo.columna_vendedor,
+            columna_complejidad=datos_mapeo.columna_complejidad,
+            columna_ftf=datos_mapeo.columna_ftf,
+            cantidades=datos_mapeo.cantidades,
+            cantidad_a_laquear=datos_mapeo.cantidad_a_laquear,
+            avance_por_puesto=datos_mapeo.avance_por_puesto,
+        )
+        filas_ok, errores = excel.interpretar_filas(columnas, filas, mapeo_interno)
+    except excel.ExcelInvalido as e:
+        raise HTTPException(400, str(e))
+
+    creados, actualizados = repository.aplicar_filas_importadas(session, filas_ok)
+    return ResultadoImportacionOut(
+        creados=creados,
+        actualizados=actualizados,
+        filas_con_error=[ErrorFilaImportada(**error) for error in errores],
     )
