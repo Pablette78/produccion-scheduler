@@ -1,0 +1,354 @@
+:root {
+  --text: #2b2730;
+  --text-h: #08060d;
+  --bg: #fafafa;
+  --bg-elevado: #fff;
+  --border: #dddbe0;
+  --accent: #6d28d9;
+  --verde: #2e9e4f;
+  --amarillo: #d9a400;
+  --rojo: #c43b3b;
+
+  font: 15px/1.5 system-ui, "Segoe UI", Roboto, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+h1 {
+  font-size: 20px;
+  margin: 0;
+}
+
+h2 {
+  font-size: 18px;
+  margin: 0 0 12px;
+}
+
+h3 {
+  font-size: 15px;
+  margin: 16px 0 6px;
+}
+
+.barra-superior {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 12px 24px;
+  background: var(--bg-elevado);
+  border-bottom: 1px solid var(--border);
+}
+
+.barra-superior nav {
+  display: flex;
+  gap: 16px;
+}
+
+.barra-superior nav a {
+  color: var(--text);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.barra-superior nav a.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.contenido {
+  padding: 24px;
+  flex: 1;
+  overflow-x: auto;
+}
+
+.encabezado-pantalla {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.boton,
+button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+  display: inline-block;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+table.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-elevado);
+}
+
+table.tabla th,
+table.tabla td {
+  border-bottom: 1px solid var(--border);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+table.tabla th {
+  font-size: 13px;
+  color: #6b6375;
+  font-weight: 600;
+}
+
+.asa-arrastre {
+  cursor: grab;
+  color: #999;
+  width: 20px;
+}
+
+.acciones {
+  display: flex;
+  gap: 8px;
+}
+
+.acciones a {
+  color: var(--accent);
+}
+
+.semaforo {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.semaforo--vacio {
+  background: #bbb;
+}
+
+.error {
+  color: var(--rojo);
+  font-weight: 600;
+}
+
+.nota {
+  color: #6b6375;
+  margin-bottom: 12px;
+}
+
+.formulario fieldset {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  background: var(--bg-elevado);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.formulario legend {
+  font-weight: 600;
+  padding: 0 6px;
+}
+
+.formulario label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  min-width: 140px;
+}
+
+.formulario input,
+.formulario select {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.fila-faltante,
+.fila-alta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.fila-faltante input,
+.fila-faltante select,
+.fila-alta input,
+.fila-alta select {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.acciones-formulario {
+  display: flex;
+  gap: 10px;
+}
+
+.acciones-formulario button[type="button"] {
+  background: #999;
+}
+
+.lista-simple {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px;
+}
+
+.lista-simple li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+
+.lista-simple button {
+  background: var(--rojo);
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+/* Gantt */
+.gantt-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  background: var(--bg-elevado);
+  border-radius: 8px;
+}
+
+.gantt {
+  padding: 12px;
+}
+
+.gantt-bloque-trabajo {
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.gantt-bloque-trabajo:last-child {
+  border-bottom: none;
+}
+
+.gantt-titulo-trabajo {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.gantt-fila {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.gantt-etiqueta {
+  width: 120px;
+  flex: 0 0 120px;
+  font-size: 12px;
+  padding-right: 12px;
+  color: #6b6375;
+}
+
+.gantt-pista {
+  position: relative;
+  height: 22px;
+  background: #f1f0f4;
+  border-radius: 4px;
+}
+
+.gantt-barra {
+  position: absolute;
+  top: 1px;
+  height: 20px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 10px;
+  line-height: 20px;
+  border-radius: 4px;
+  padding: 0 6px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.gantt-barra--laqueado {
+  background: #999;
+}
+
+.gantt-bloqueado {
+  position: absolute;
+  top: 1px;
+  height: 20px;
+  line-height: 20px;
+  background: var(--rojo);
+  color: #fff;
+  font-size: 10px;
+  border-radius: 4px;
+  padding: 0 6px;
+  white-space: nowrap;
+}
+
+/* Carga diaria */
+.carga-puesto {
+  margin-bottom: 20px;
+}
+
+.carga-barras {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 80px;
+  background: var(--bg-elevado);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px;
+  overflow-x: auto;
+}
+
+.carga-barra-dia {
+  width: 8px;
+  flex: 0 0 8px;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  background: #f1f0f4;
+}
+
+.carga-barra-dia__relleno {
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+}

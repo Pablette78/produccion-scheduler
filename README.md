@@ -6,7 +6,7 @@ Se construye en etapas:
 
 1. **Motor de cálculo** (`engine/`) — código puro, con tests. Listo.
 2. **API** (`api/`) — FastAPI + SQLite, envuelve el motor con persistencia. Lista.
-3. **Interfaz web** (`web/`) — todavía no construida.
+3. **Interfaz web** (`web/`) — React + TypeScript + Vite. Primera versión lista.
 
 ## Motor de cálculo
 
@@ -87,3 +87,46 @@ pytest
 ```
 
 (El mismo comando de arriba corre los tests del motor y de la API juntos.)
+
+## Interfaz web
+
+React + TypeScript + Vite, consume la API. En desarrollo, Vite redirige
+`/api/*` hacia `http://127.0.0.1:8000` (ver `web/vite.config.ts`), así que
+hay que tener la API corriendo al mismo tiempo.
+
+### Correr la interfaz
+
+```powershell
+uvicorn api.main:app --reload
+```
+
+```powershell
+cd web
+npm install
+npm run dev
+```
+
+Abrir `http://localhost:5173`.
+
+### Pantallas
+
+- **Trabajos** — tabla con semáforo y desvío contra FTF, reordenar
+  arrastrando (recalcula el cronograma al soltar), alta/edición/borrado.
+- **Nuevo trabajo / Editar trabajo** — cantidades por componente, cantidad a
+  laquear, avance ya realizado por puesto, material faltante (con o sin
+  fecha estimada).
+- **Gantt** — una fila por puesto dentro de cada trabajo, con los puestos
+  frenados por faltante marcados con ⏸.
+- **Carga diaria** — barras de capacidad usada vs. total por puesto y día,
+  para ver cuellos de botella.
+- **Puestos** — edición de capacidad diaria, días fijos y lote de traspaso.
+- **Calendario** — feriados, excepciones por puesto y fecha, y el umbral
+  del semáforo amarillo.
+
+### Pendiente de esta etapa
+
+- Importación/exportación de Excel (sección 8.7) — necesita los archivos
+  reales del usuario para definir el mapeo de columnas.
+- "Pendientes de cierre" (trabajos con placas = 0) y el análisis de demoras
+  por complejidad (secciones 8.5 y 8.8).
+- Alta de puestos nuevos desde la UI (hoy solo se editan los existentes).

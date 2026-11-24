@@ -6,6 +6,7 @@ from datetime import date
 from typing import Optional
 
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
 
 from engine.scheduler import calcular_programa
@@ -52,6 +53,13 @@ async def ciclo_de_vida(app: FastAPI):
 
 
 app = FastAPI(title="Programador de producción", lifespan=ciclo_de_vida)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # --------------------------------------------------------------------------
